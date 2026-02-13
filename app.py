@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-
+from sklearn.metrics import roc_curve, auc
+from sklearn.preprocessing import label_binarize
 from sklearn.metrics import confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 
@@ -121,3 +122,26 @@ else:
         f"No `{TARGET_COL}` column found in uploaded CSV. "
         "Upload test data with labels to see confusion matrix and report."
     )
+
+# ---------- ROC Curve (Multi-class OvR) ----------
+st.subheader("ROC Curve (One-vs-Rest)")
+
+y_proba = model.predict_proba(X_scaled)
+classes = np.unique(y_true)
+
+y_true_bin = label_binarize(y_true, classes=classes)
+
+fig2, ax2 = plt.subplots()
+
+for i, c in enumerate(classes):
+    fpr, tpr, _ = roc_curve(y_true_bin[:, i], y_proba[:, i])
+    roc_auc = auc(fpr, tpr)
+    ax2.plot(fpr, tpr, label=f"Class {c} (AUC={roc_auc:.3f})")
+
+ax2.plot([0, 1], [0, 1], linestyle="--", label="Random")
+ax2.set_xlabel("False Positive Rate")
+ax2.set_ylabel("True Positive Rate")
+ax2.set_title(f"ROC Curve - {model_name}")
+ax2.legend()
+
+st.pyplot(fig2)    
