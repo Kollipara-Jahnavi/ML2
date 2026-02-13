@@ -22,7 +22,11 @@ MODEL_FILES = {
 
 # ---------- Sidebar ----------
 st.sidebar.header("Controls")
-model_name = st.sidebar.selectbox("Select Model", list(MODEL_FILES.keys()))
+#model_name = st.sidebar.selectbox("Select Model", list(MODEL_FILES.keys()))
+model_name = st.sidebar.radio(
+    "Select Model",
+    list(MODEL_FILES.keys())
+)
 
 # ---------- Load metrics.csv ----------
 st.subheader("Model Comparison Table")
