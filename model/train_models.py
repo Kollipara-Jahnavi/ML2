@@ -75,23 +75,20 @@ models = {
 # -------------------------
 # 5. Metrics function
 # -------------------------
-def evaluate_model(model, X_test_scaled, y_test):
-    y_pred = model.predict(X_test_scaled)
+def evaluate_model(model, X_scaled, y_true):
+    y_pred = model.predict(X_scaled)
 
-    # Probability scores for AUC
-    y_proba = model.predict_proba(X_test_scaled)
+    # AUC needs probabilities
+    y_proba = model.predict_proba(X_scaled)
 
-    acc = accuracy_score(y_test, y_pred)
-    prec = precision_score(y_test, y_pred, average="weighted", zero_division=0)
-    rec = recall_score(y_test, y_pred, average="weighted", zero_division=0)
-    f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
-    mcc = matthews_corrcoef(y_test, y_pred)
-
-    # Multi-class AUC (One-vs-Rest)
-    auc = roc_auc_score(y_test, y_proba, multi_class="ovr", average="weighted")
+    acc = accuracy_score(y_true, y_pred)
+    prec = precision_score(y_true, y_pred, average="weighted", zero_division=0)
+    rec = recall_score(y_true, y_pred, average="weighted", zero_division=0)
+    f1 = f1_score(y_true, y_pred, average="weighted", zero_division=0)
+    mcc = matthews_corrcoef(y_true, y_pred)
+    auc = roc_auc_score(y_true, y_proba, multi_class="ovr", average="weighted")
 
     return acc, auc, prec, rec, f1, mcc
-
 
 # -------------------------
 # 6. Train models + store results
@@ -104,20 +101,28 @@ for name, model in models.items():
     print(f"Training: {name}")
     model.fit(X_train_scaled, y_train)
 
-    acc, auc, prec, rec, f1, mcc = evaluate_model(model, X_test_scaled, y_test)
+    train_acc, train_auc, train_prec, train_rec, train_f1, train_mcc = evaluate_model(model, X_train_scaled, y_train)
+    test_acc, test_auc, test_prec, test_rec, test_f1, test_mcc = evaluate_model(model, X_test_scaled, y_test)
 
     results.append({
         "Model": name,
-        "Accuracy": round(acc, 4),
-        "AUC": round(auc, 4),
-        "Precision": round(prec, 4),
-        "Recall": round(rec, 4),
-        "F1 Score": round(f1, 4),
-        "MCC": round(mcc, 4)
+
+        "Train Accuracy": round(train_acc, 4),
+        "Train AUC": round(train_auc, 4),
+        "Train Precision": round(train_prec, 4),
+        "Train Recall": round(train_rec, 4),
+        "Train F1": round(train_f1, 4),
+        "Train MCC": round(train_mcc, 4),
+
+        "Test Accuracy": round(test_acc, 4),
+        "Test AUC": round(test_auc, 4),
+        "Test Precision": round(test_prec, 4),
+        "Test Recall": round(test_rec, 4),
+        "Test F1": round(test_f1, 4),
+        "Test MCC": round(test_mcc, 4),
     })
 
     joblib.dump(model, f"model/saved_models/{name.replace(' ', '_').lower()}.pkl")
-
 
 # Save scaler
 joblib.dump(scaler, "model/saved_models/scaler.pkl")
