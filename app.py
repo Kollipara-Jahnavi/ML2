@@ -36,16 +36,25 @@ try:
 except Exception as e:
     st.error(f"Could not load model/metrics.csv: {e}")
 
-# ---------- Upload test data ----------
-st.subheader("Upload Test CSV")
-uploaded = st.file_uploader("Upload CSV file (with or without price_range)", type=["csv"])
+# ---------- Load data (default or upload) ----------
+st.subheader("Dataset Input")
 
-if uploaded is None:
-    st.info("Upload a CSV file to run predictions.")
-    st.stop()
+use_default = st.checkbox("Use default dataset from repository (mobile_price.csv)", value=True)
 
-df = pd.read_csv(uploaded)
-st.write("Uploaded data shape:", df.shape)
+if use_default:
+    df = pd.read_csv("data/mobile_price.csv")
+    st.success("Loaded default dataset from repository: data/mobile_price.csv")
+else:
+    uploaded = st.file_uploader("Upload CSV file (with or without price_range)", type=["csv"])
+
+    if uploaded is None:
+        st.info("Upload a CSV file to run predictions.")
+        st.stop()
+
+    df = pd.read_csv(uploaded)
+    st.success("Uploaded dataset successfully!")
+
+st.write("Dataset shape:", df.shape)
 st.dataframe(df.head(10))
 
 # ---------- Load model + scaler ----------
@@ -61,6 +70,19 @@ else:
     X = df.copy()
     y_true = None
     has_labels = False
+
+# ---- SAFETY CHECK ----
+expected_cols = list(pd.read_csv("data/mobile_price.csv").drop(columns=[TARGET_COL]).columns)
+
+missing = [c for c in expected_cols if c not in X.columns]
+extra = [c for c in X.columns if c not in expected_cols]
+
+if missing:
+    st.error(f"Missing required columns: {missing}")
+    st.stop()
+
+# reorder columns to match training
+X = X[expected_cols]
 
 # Scale features
 X_scaled = scaler.transform(X)
@@ -86,6 +108,9 @@ if has_labels:
         ax.imshow(cm)
         ax.set_xlabel("Predicted")
         ax.set_ylabel("Actual")
+        ax.set_xticks(range(cm.shape[1]))
+        ax.set_yticks(range(cm.shape[0]))
+        ax.set_title(model_name)
         st.pyplot(fig)
 
     with col2:
