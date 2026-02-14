@@ -26,24 +26,17 @@ from xgboost import XGBClassifier
 # -------------------------
 # 1. Load dataset
 # -------------------------
-DATA_PATH = "data/mobile_price.csv"
-df = pd.read_csv(DATA_PATH)
 
 TARGET_COL = "price_range"
 
-X = df.drop(columns=[TARGET_COL])
-y = df[TARGET_COL]
+train_df = pd.read_csv("data/train.csv")
+test_df  = pd.read_csv("data/test.csv")
 
+X_train = train_df.drop(columns=[TARGET_COL])
+y_train = train_df[TARGET_COL]
 
-# -------------------------
-# 2. Train-test split
-# -------------------------
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y,
-    test_size=0.2,
-    random_state=42,
-    stratify=y
-)
+X_test = test_df.drop(columns=[TARGET_COL])
+y_test = test_df[TARGET_COL]
 
 
 # -------------------------
@@ -65,7 +58,7 @@ models = {
     "Random Forest": RandomForestClassifier(n_estimators=200, random_state=42),
     "XGBoost": XGBClassifier(
         objective="multi:softprob",
-        num_class=len(np.unique(y)),
+        num_class=len(np.unique(y_train)),
         eval_metric="mlogloss",
         random_state=42
     )
