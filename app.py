@@ -6,6 +6,7 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import confusion_matrix, classification_report
 import matplotlib.pyplot as plt
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="ML Assignment 2", layout="wide")
 st.title("Machine Learning Assignment 2 - Mobile Price Classification")
@@ -30,10 +31,56 @@ model_name = st.sidebar.radio(
 )
 
 # ---------- Load metrics.csv ----------
-st.subheader("Model Comparison Table")
+st.subheader("Model Comparison Table (Test vs Train)")
+
 try:
-    metrics_df = pd.read_csv("model/metrics.csv")
-    st.dataframe(metrics_df)
+    metrics_df = pd.read_csv("model/metrics.csv").round(2)
+
+    html = """
+    <style>
+    table {width:100%; border-collapse: collapse;}
+    th, td {border: 1px solid #ddd; padding: 8px; text-align: center;}
+    th {background-color: #f2f2f2; font-weight: bold;}
+    </style>
+    """
+
+    html += "<table>"
+    html += """
+        <tr>
+            <th rowspan="2">Model</th>
+            <th colspan="6">Test</th>
+            <th colspan="6">Train</th>
+        </tr>
+        <tr>
+            <th>Accuracy</th><th>AUC</th><th>Precision</th><th>Recall</th><th>F1 Score</th><th>MCC</th>
+            <th>Accuracy</th><th>AUC</th><th>Precision</th><th>Recall</th><th>F1 Score</th><th>MCC</th>
+        </tr>
+    """
+
+    for _, row in metrics_df.iterrows():
+        html += f"""
+        <tr>
+            <td><b>{row['Model']}</b></td>
+            <td>{row['Test Accuracy']}</td>
+            <td>{row['Test AUC']}</td>
+            <td>{row['Test Precision']}</td>
+            <td>{row['Test Recall']}</td>
+            <td>{row['Test F1']}</td>
+            <td>{row['Test MCC']}</td>
+
+            <td>{row['Train Accuracy']}</td>
+            <td>{row['Train AUC']}</td>
+            <td>{row['Train Precision']}</td>
+            <td>{row['Train Recall']}</td>
+            <td>{row['Train F1']}</td>
+            <td>{row['Train MCC']}</td>
+        </tr>
+        """
+
+    html += "</table>"
+
+    components.html(html, height=420, scrolling=True)
+
 except Exception as e:
     st.error(f"Could not load model/metrics.csv: {e}")
 
@@ -92,8 +139,16 @@ X_scaled = scaler.transform(X)
 y_pred = model.predict(X_scaled)
 
 st.subheader("Predictions")
+
 pred_df = pd.DataFrame({"prediction": y_pred})
-st.dataframe(pred_df.head(20))
+st.write(f"Total predictions generated: **{len(pred_df)}** rows")
+
+# Show compact preview
+st.dataframe(pred_df.head(20), use_container_width=False)
+
+# Add class distribution (very useful)
+st.markdown("**Prediction distribution:**")
+st.dataframe(pred_df["prediction"].value_counts().rename_axis("class").reset_index(name="count"))
 
 # ---------- Evaluation (if labels available) ----------
 if has_labels:
