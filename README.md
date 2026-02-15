@@ -71,7 +71,8 @@ Below is the comparison table:
 | XGBoost | 0.9350 | 0.9945 | 0.9355 | 0.9350 | 0.9350 | 0.9135 |
 
 ---
-
+**Note:** The table above shows only **Test dataset performance metrics**.  
+For complete **Train vs Test metrics** for all models, refer to: `model/metrics.csv`.
 ## 6. Observations Table (Insights)
 
 | Observation | Explanation |
@@ -92,14 +93,28 @@ A Streamlit application is developed to:
 - View evaluation results (confusion matrix and classification report)
 - View model comparison metrics table
 
-Streamlit App Link:
-https://ml2-mobile-price-classifier.streamlit.app/
+## Live App
+🔗 https://ml2-mobile-price-classifier.streamlit.app/
+
+## How to Use the Streamlit App (For Evaluation)
+
+1. Open the Streamlit app link.
+2. Select a model from the sidebar.
+3. Choose dataset input method:
+   - Upload CSV file (recommended), OR
+   - Use built-in test.csv from repository.
+4. If the uploaded dataset contains the column `price_range`, the app displays:
+   - Evaluation metrics
+   - Confusion matrix
+   - Classification report
+   - ROC curve
+5. If `price_range` is not provided, the app will only generate predictions.
 
 ---
 
 ## 8. GitHub Repository Link
 GitHub Repository:
-https://github.com/Kollipara-Jahnavi/ML2
+🔗 https://github.com/Kollipara-Jahnavi/ML2
 
 ---
 
@@ -109,7 +124,9 @@ ML2/
 │-- requirements.txt
 │-- README.md
 │-- data/
-│ └── mobile_price.csv
+└── mobile_price.csv
+└── train.csv
+└── test.csv
 │-- model/
 ├── train_models.py
 ├── metrics.csv
